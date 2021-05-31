@@ -1,7 +1,9 @@
-import { getInput } from "@actions/core/lib/core";
-import {PullsCreateReviewRequestParams, PullsCreateParams} from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/rest-endpoint-methods-types'
+import { getInput } from "@actions/core";
+import {RestEndpointMethodTypes} from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types'
 
-type Inputs = PullsCreateParams & Required<Omit<PullsCreateReviewRequestParams, 'pull_number' | 'team_reviewers'>>
+import {RequestParameters} from '@octokit/types'
+
+type Inputs = RestEndpointMethodTypes["pulls"]["create"]["parameters"] & { reviewers: string[] };
 
 export function getInputs(): Inputs {
   const head = getInput("head", { required: true });
@@ -20,13 +22,15 @@ export function getInputs(): Inputs {
   const [owner, repo] = githubRepository.split("/");
 
   return {
-    head,
-    base,
-    title,
-    draft,
-    body,
     owner,
     repo,
+
+    title,
+    head,
+    base, // base branch
+    body, // content of PR  (why string????????)
+    draft,
+
     reviewers: reviewers
       ? reviewers.split(",").map(reviewer => reviewer.trim())
       : []
